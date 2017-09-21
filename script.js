@@ -549,10 +549,12 @@ var foeHPFormula = (foe) => {
   $(currentHPBar).appendTo(maxHPBar);
   $(maxHPBar).appendTo("#comp-active-display");
 }
+var mainBattleScreenMenu = 0;
+var fightClicker = 0;
 var userMove =[];
 var compMove = [];
-var userActiveSpd = (userActive[0].stats.speed*2)+5;
-var compActiveSpd = (compActive[0].stats.speed*2)+5;
+var userActiveSpd = 0;
+var compActiveSpd = 0;
 var s = 0;
 var u = 0;
 var c = 0;
@@ -608,7 +610,7 @@ const compStart = () => {
     }
       // Setting what I want to start within my small sectionals in the UI
       let small = document.getElementsByClassName("small");
-      let mainBattleScreenMenu = () =>{
+      mainBattleScreenMenu = () =>{
         let arrUI = ["fight", "switch", "item", "quit"];
         $(".small").empty();
         for(let i = 0; i < small.length; i++) {
@@ -622,7 +624,7 @@ const compStart = () => {
       }
       mainBattleScreenMenu();
       // Click functionality for the fight tag
-      let fightClicker = () => {
+      fightClicker = () => {
          $("#fight").click((e)=> {
           console.log(e);
           fightClicked = !fightClicked;
@@ -707,12 +709,14 @@ const battleP2 = () => {
         }
 
           foeCurrentHP -= dmg(userMove.power, u, c);
+          console.log("slower phy", foeCurrentHP);
+
           if(foeCurrentHP < 0) {
-            delete compActive[0];
-            $("#foe-current").remove;
-            $("#comp-active-maxhp").remove;
-            $("#comp-active-currenthp").remove;
-            $("#comp-active-sprite").remove;
+            compActive = [];
+            $("#foe-current").remove();
+            $("#comp-active-maxhp").remove();
+            $("#comp-active-currenthp").remove();
+            $("#comp-active-sprite").remove();
             compStart();
           } else {
             foeHPFormula(foeCurrentHP);
@@ -738,13 +742,13 @@ const battleP2 = () => {
         }
 
           foeCurrentHP -= dmg(userMove.power, u, c);
-
+          console.log("slower", foeCurrentHP);
           if(foeCurrentHP < 0) {
-            delete compActive[0];
-            $("#foe-current").remove;
-            $("#comp-active-maxhp").remove;
-            $("#comp-active-currenthp").remove;
-            $("#comp-active-sprite").remove;
+            compActive = [];
+            $("#foe-current").remove();
+            $("#comp-active-maxhp").remove();
+            $("#comp-active-currenthp").remove();
+            $("#comp-active-sprite").remove();
             compStart();
           } else {
             foeHPFormula(foeCurrentHP);
@@ -791,11 +795,11 @@ const battleP2 = () => {
           userCurrentHP -= dmg(compMove.power, u, c);
 
           if(userCurrentHP < 0) {
-            delete userActive[0];
-            $("#user-current").remove;
-            $("#user-active-maxhp").remove;
-            $("#user-active-currenthp").remove;
-            $("#user-active-sprite").remove;
+            userActive = [];
+            $("#user-current").remove();
+            $("#user-active-maxhp").remove();
+            $("#user-active-currenthp").remove();
+            $("#user-active-sprite").remove();
             userStart();
           } else {
             userHPFormula(userCurrentHP);
@@ -824,11 +828,11 @@ const battleP2 = () => {
           userCurrentHP -= dmg(compMove.power, u, c);
 
           if(userCurrentHP < 0) {
-            delete userActive[0];
-            $("#user-current").remove;
-            $("#user-active-maxhp").remove;
-            $("#user-active-currenthp").remove;
-            $("#user-active-sprite").remove;
+            userActive = [];
+            $("#user-current").remove();
+            $("#user-active-maxhp").remove();
+            $("#user-active-currenthp").remove();
+            $("#user-active-sprite").remove();
             userStart();
           } else {
             userHPFormula(userCurrentHP);
@@ -839,7 +843,7 @@ const battleP2 = () => {
       else if(compMove.category === "heal") {
         foeCurrentHP += (foeCurrentHP*userMove.power);
 
-        if(foeCurrentHP === foeActive[0].stats.hp*2+110) {
+        if(foeCurrentHP === compActive[0].stats.hp*2+110) {
           console.log("I have full HP");
         }
         else if(foeCurrentHP > compActive[0].stats.hp*2+110) {
@@ -891,14 +895,18 @@ const battle = () => {
         }
 
           foeCurrentHP -= dmg(userMove.power, u, c);
+          console.log("Here x2", foeCurrentHP);
           if(foeCurrentHP < 0) {
-            delete compActive[0];
-            $("#foe-current").remove;
-            $("#comp-active-maxhp").remove;
-            $("#comp-active-currenthp").remove;
-            $("#comp-active-sprite").remove;
+            console.log("hello my lady");
+            compActive = [];
+            $("#foe-current").remove();
+            $("#comp-active-maxhp").remove();
+            $("#comp-active-currenthp").remove();
+            $("#comp-active-sprite").remove();
             compStart();
+            userActiveSpd = 0
           } else {
+            console.log("did it hit");
             foeHPFormula(foeCurrentHP);
             userActiveSpd = 0;
             battleP2();
@@ -922,14 +930,16 @@ const battle = () => {
         }
 
           foeCurrentHP -= dmg(userMove.power, u, c);
-
+          console.log("here - ", foeCurrentHP);
           if(foeCurrentHP < 0) {
-            delete compActive[0];
-            $("#foe-current").remove;
-            $("#comp-active-maxhp").remove;
-            $("#comp-active-currenthp").remove;
-            $("#comp-active-sprite").remove;
+            console.log("in if");
+            compActive = [];
+            $("#foe-current").remove();
+            $("#comp-active-maxhp").remove();
+            $("#comp-active-currenthp").remove();
+            $("#comp-active-sprite").remove();
             compStart();
+            userActiveSpd = 0;
           } else {
             foeHPFormula(foeCurrentHP);
             userActiveSpd = 0;
@@ -975,12 +985,13 @@ const battle = () => {
           userCurrentHP -= dmg(compMove.power, u, c);
 
           if(userCurrentHP < 0) {
-            delete userActive[0];
-            $("#user-current").remove;
-            $("#user-active-maxhp").remove;
-            $("#user-active-currenthp").remove;
-            $("#user-active-sprite").remove;
+            userActive = [];
+            $("#user-current").remove();
+            $("#user-active-maxhp").remove();
+            $("#user-active-currenthp").remove();
+            $("#user-active-sprite").remove();
             userStart();
+            compActiveSpd = 0;
           } else {
             userHPFormula(userCurrentHP);
             compActiveSpd = 0;
@@ -1008,11 +1019,11 @@ const battle = () => {
           userCurrentHP -= dmg(compMove.power, u, c);
 
           if(userCurrentHP < 0) {
-            delete userActive[0];
-            $("#user-current").remove;
-            $("#user-active-maxhp").remove;
-            $("#user-active-currenthp").remove;
-            $("#user-active-sprite").remove;
+            userActive = [];
+            $("#user-current").remove();
+            $("#user-active-maxhp").remove();
+            $("#user-active-currenthp").remove();
+            $("#user-active-sprite").remove();
             userStart();
             compActiveSpd = 0;
           } else {
@@ -1024,7 +1035,7 @@ const battle = () => {
       else if(compMove.category === "heal") {
         foeCurrentHP += (foeCurrentHP*userMove.power);
 
-        if(foeCurrentHP === foeActive[0].stats.hp*2+110) {
+        if(foeCurrentHP === compActive[0].stats.hp*2+110) {
           console.log("I have full HP");
         }
         else if(foeCurrentHP > compActive[0].stats.hp*2+110) {
