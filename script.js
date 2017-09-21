@@ -551,6 +551,8 @@ var foeHPFormula = (foe) => {
 }
 var userMove =[];
 var compMove = [];
+var userActiveSpd = (userActive[0].stats.speed*2)+5;
+var compActiveSpd = (compActive[0].stats.speed*2)+5;
 var s = 0;
 var u = 0;
 var c = 0;
@@ -679,24 +681,8 @@ const compStart = () => {
         }
       });
 }
-// Battle function - All the logic for the battle.
-let battle = () => {
-  if(!userActive[0]) {
-    userStart();
-  }
-  else if(!compActive[0]) {
-    compStart();
-  }
-  else if(!userActive[0] && !compActive[0]) {
-    userStart();
-    compStart();
-  } else { // DO LITERALLY everything else
-    // Randomly selecting the compActive's move choice and saving it for later;
-    compMove = compActive[0].moves[Math.floor(Math.random() * (3 - 0) + 0)];
-    // Calculating Speed to find the faster pokemon
-    let userActiveSpd = (userActive[0].stats.speed*2)+5;
-    let compActiveSpd = (compActive[0].stats.speed*2)+5;
-
+// 2nd part of the battle phase
+const battleP2 = () => {
     if(userActiveSpd > compActiveSpd) {
       // Checking for STAB on Attacking poke
       if(userActive[0].types[0] === userMove.type || userActive[0].types[0] === userMove.type) {
@@ -728,8 +714,11 @@ let battle = () => {
             $("#comp-active-currenthp").remove;
             $("#comp-active-sprite").remove;
             compStart();
+          } else {
+            foeHPFormula(foeCurrentHP);
+            mainBattleScreenMenu();
+            fightClicker();
           }
-          foeHPFormula(foeCurrentHP);
       }
       else if(userMove.category === "special") {
         // if Current move is special - calcu atk and def
@@ -759,7 +748,8 @@ let battle = () => {
             compStart();
           } else {
             foeHPFormula(foeCurrentHP);
-
+            mainBattleScreenMenu();
+            fightClicker();
           }
         }
       else if(userMove.category === "heal") {
@@ -807,9 +797,11 @@ let battle = () => {
             $("#user-active-currenthp").remove;
             $("#user-active-sprite").remove;
             userStart();
+          } else {
+            userHPFormula(userCurrentHP);
+            mainBattleScreenMenu();
+            fightClicker();
           }
-
-          userHPFormula(userCurrentHP);
       }
       else if(compMove.category === "special") {
         // if Current move is special - calcu atk and def
@@ -838,9 +830,196 @@ let battle = () => {
             $("#user-active-currenthp").remove;
             $("#user-active-sprite").remove;
             userStart();
+          } else {
+            userHPFormula(userCurrentHP);
+            mainBattleScreenMenu();
+            fightClicker();
           }
+      }
+      else if(compMove.category === "heal") {
+        foeCurrentHP += (foeCurrentHP*userMove.power);
 
+        if(foeCurrentHP === foeActive[0].stats.hp*2+110) {
+          console.log("I have full HP");
+        }
+        else if(foeCurrentHP > compActive[0].stats.hp*2+110) {
+          foeCurrentHP = compActive[0].stats.hp*2+110;
+        }
+        foeHPFormula(foeCurrentHP);
+      }
+    }
+}
+// Battle function - All the logic for the battle.
+const battle = () => {
+  if(!userActive[0]) {
+    userStart();
+  }
+  else if(!compActive[0]) {
+    compStart();
+  }
+  else if(!userActive[0] && !compActive[0]) {
+    userStart();
+    compStart();
+  } else { // DO LITERALLY everything else
+    // Randomly selecting the compActive's move choice and saving it for later;
+    compMove = compActive[0].moves[Math.floor(Math.random() * (3 - 0) + 0)];
+    // Calculating Speed to find the faster pokemon
+    userActiveSpd = (userActive[0].stats.speed*2)+5;
+    compActiveSpd = (compActive[0].stats.speed*2)+5;
+
+    if(userActiveSpd > compActiveSpd) {
+      // Checking for STAB on Attacking poke
+      if(userActive[0].types[0] === userMove.type || userActive[0].types[0] === userMove.type) {
+        s = 1.5;
+      } else {
+        s = 1;
+      }
+
+      if(userMove.category === "physical") {
+        // if Current move is physical - calcu atk and def
+        u = (userActive[0].stats.attack*2)+5;
+        c = (compActive[0].stats.defense*2)+5;
+        // randomizer for damage calcs
+        r = Number((Math.random()*(1 - .85) + .85).toFixed(2));
+        // CHecking typeChart
+        if(compActive[0].types.length > 1) {
+          let t1 = battleTypeChart[compActive[0].types[0]].damageTaken[userMove.type];
+          let t2 = battleTypeChart[compActive[0].types[1]].damageTaken[userMove.type];
+          t = t1 * t2;
+        } else {
+          t = battleTypeChart[compActive[0].types[0]].damageTaken[userMove.type];
+        }
+
+          foeCurrentHP -= dmg(userMove.power, u, c);
+          if(foeCurrentHP < 0) {
+            delete compActive[0];
+            $("#foe-current").remove;
+            $("#comp-active-maxhp").remove;
+            $("#comp-active-currenthp").remove;
+            $("#comp-active-sprite").remove;
+            compStart();
+          } else {
+            foeHPFormula(foeCurrentHP);
+            userActiveSpd = 0;
+            battleP2();
+          }
+      }
+      else if(userMove.category === "special") {
+        // if Current move is special - calcu atk and def
+        u = (userActive[0].stats["special-attack"]*2)+5;
+        c = (compActive[0].stats["special-defense"]*2)+5;
+        // randomizer for damage calcs
+        r = Number((Math.random()*(1 - .85) + .85).toFixed(2));
+        // CHecking typeChart
+        if(compActive[0].types.length > 1) {
+          let ty1 = compActive[0].types[0];
+          let ty2 = compActive[0].types[1];
+          let t1 = battleTypeChart[ty1].damageTaken[userMove.type];
+          let t2 = battleTypeChart[ty2].damageTaken[userMove.type];
+          t = t1 * t2;
+        } else {
+          t = battleTypeChart[compActive[0].types[0]].damageTaken[userMove.type];
+        }
+
+          foeCurrentHP -= dmg(userMove.power, u, c);
+
+          if(foeCurrentHP < 0) {
+            delete compActive[0];
+            $("#foe-current").remove;
+            $("#comp-active-maxhp").remove;
+            $("#comp-active-currenthp").remove;
+            $("#comp-active-sprite").remove;
+            compStart();
+          } else {
+            foeHPFormula(foeCurrentHP);
+            userActiveSpd = 0;
+            battleP2();
+          }
+        }
+      else if(userMove.category === "heal") {
+        userCurrentHP += (userCurrentHP*userMove.power);
+
+        if(userCurrentHP === userActive[0].stats.hp*2+110) {
+          console.log("I have full HP");
+        }
+        else if(userCurrentHP > userActive[0].stats.hp*2+110) {
+          userCurrentHP = userActive[0].stats.hp*2+110;
+        } else {
           userHPFormula(userCurrentHP);
+        }
+      }
+    }
+    else if(compActiveSpd > userActiveSpd) {
+      // Checking for STAB on Attacking poke
+      if(compActive[0].types[0] === compMove.type || compActive[0].types[1] === compMove.type) {
+        s = 1.5;
+      } else {
+        s = 1;
+      }
+
+      if(compMove.category === "physical") {
+        // if Current move is physical - calcu atk and def
+        u = (compActive[0].stats.attack*2)+5;
+        c = (userActive[0].stats.defense*2)+5;
+        // randomizer for damage calcs
+        r = Number((Math.random()*(1 - .85) + .85).toFixed(2));
+        // CHecking typeChart
+        if(userActive[0].types.length > 1) {
+          let t1 = battleTypeChart[userActive[0].types[0]].damageTaken[compMove.type];
+          let t2 = battleTypeChart[userActive[0].types[1]].damageTaken[compMove.type];
+          t = t1 * t2;
+        } else {
+          t = battleTypeChart[userActive[0].types[0]].damageTaken[compMove.type];
+        }
+
+          userCurrentHP -= dmg(compMove.power, u, c);
+
+          if(userCurrentHP < 0) {
+            delete userActive[0];
+            $("#user-current").remove;
+            $("#user-active-maxhp").remove;
+            $("#user-active-currenthp").remove;
+            $("#user-active-sprite").remove;
+            userStart();
+          } else {
+            userHPFormula(userCurrentHP);
+            compActiveSpd = 0;
+            battleP2();
+          }
+        }
+      else if(compMove.category === "special") {
+        // if Current move is special - calcu atk and def
+        u = (compActive[0].stats["special-attack"]*2)+5;
+        c = (userActive[0].stats["special-defense"]*2)+5;
+        // randomizer for damage calcs
+        r = Number((Math.random()*(1 - .85) + .85).toFixed(2));
+        // CHecking typeChart
+        if(userActive[0].types.length > 1) {
+          let ty1 = userActive[0].types[0];
+          let ty2 = userActive[0].types[1];
+          let t1 = battleTypeChart[ty1].damageTaken[compMove.type];
+          let t2 = battleTypeChart[ty2].damageTaken[compMove.type];
+          t = t1 * t2;
+        } else {
+          let ty1 = userActive[0].types[0];
+          t = battleTypeChart[ty1].damageTaken[compMove.type];
+        }
+
+          userCurrentHP -= dmg(compMove.power, u, c);
+
+          if(userCurrentHP < 0) {
+            delete userActive[0];
+            $("#user-current").remove;
+            $("#user-active-maxhp").remove;
+            $("#user-active-currenthp").remove;
+            $("#user-active-sprite").remove;
+            userStart();
+            compActiveSpd = 0;
+          } else {
+            userHPFormula(userCurrentHP);
+            compActiveSpd = 0;
+            battleP2();
+          }
       }
       else if(compMove.category === "heal") {
         foeCurrentHP += (foeCurrentHP*userMove.power);
