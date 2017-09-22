@@ -1,4 +1,6 @@
 // Setting battleTypeChart for move effectiveness
+var audio = new Audio('pkmn.mp3');
+audio.play();
 var battleTypeChart = {
 	"bug": {
 		damageTaken: {
@@ -749,6 +751,9 @@ const compStart = () => {
     go.id = "game-over";
     $(go).text("You have defeated the Computer");
     $(go).appendTo("#central-info");
+    audio.pause();
+    var win = new Audio('win.mp3');
+    win.play();
   } else {
     compActive.push(compTeam.shift());
       if(compActive[0]) {
