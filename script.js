@@ -472,6 +472,7 @@ let typeColor = (type) => {
 };
 
 var fightClicked = false;
+var switchClicked = false;
 var userActive = [];
 var compActive = [];
 var maxHP = 0;
@@ -551,6 +552,7 @@ var foeHPFormula = (foe) => {
 }
 var mainBattleScreenMenu = 0;
 var fightClicker = 0;
+var switchClicker = 0;
 var userMove =[];
 var compMove = [];
 var userActiveSpd = 0;
@@ -582,15 +584,158 @@ const userStart = () => {
     $(pName).text(`${userActive[0].name}`);
     $(pName).appendTo("#user-active-display");
 
+    if(!userActive[0].currHP) {
     userCurrentHP = (userActive[0].stats.hp*2)+110
     userHPFormula(userCurrentHP);
-
+  } else {
+    userCurrentHP = userActive[0].currHP;
+    userHPFormula(userCurrentHP);
   }
+  }
+
+  let small = document.getElementsByClassName("small");
+  mainBattleScreenMenu = () =>{
+    $(".log").empty();
+    let arrUI = ["fight", "switch", "item", "quit"];
+    $(".small").empty();
+    for(let i = 0; i < small.length; i++) {
+      let p = document.createElement("p");
+      p.className = "small-text";
+      $(".small-text").css("font-size", "16px");
+      p.id = arrUI[i];
+      $(p).text(arrUI[i]);
+      $(small[i]).append(p);
+    }
+  }
+  mainBattleScreenMenu();
+  // Click functionality for the fight tag
+  fightClicker = () => {
+     $("#fight").click((e)=> {
+      console.log(e);
+      fightClicked = !fightClicked;
+      $(".small").empty();
+
+      let p = document.createElement("p");
+      p.id = "fight-info";
+      $(p).html(`Hover over a move to see details about it or press <i>ESC</i> to go back.`);
+      $(p).appendTo("#large");
+      // For loop to place the active pokemon's moves
+      for(let i = 0; i < small.length; i++) {
+        let p = document.createElement("p");
+        p.className = "small-text";
+        $(p).css("font-size", "12px");
+        p.id = i;
+        $(p).text(userActive[0].moves[i].name);
+        $(small[i]).append(p);
+
+        $(p).mouseover(() => {
+          $("#large").empty();
+          let m = document.createElement("p");
+          m.className = "move-info move-name";
+          $(m).text(userActive[0].moves[i].name);
+          $(m).appendTo("#large");
+
+          let t = document.createElement("p");
+          t.className = "move-info move-type";
+          $(t).css("background-color", typeColor(userActive[0].moves[i].type))
+          $(t).text(userActive[0].moves[i].type);
+          $(t).appendTo("#large");
+
+          let desc = document.createElement("p");
+          desc.className = "move-info move-desc";
+          $(desc).text(userActive[0].moves[i].description);
+          $(desc).appendTo("#large");
+        })
+        // Add a click event to each move also.
+        $(p).click((e) => {
+          userMove = userActive[0].moves[e.target.id];
+          console.log(`You are going to use ${e.target.text} when the Battle function runs`)
+          battle(); // -> This calls mainBattleScreenMenu and fightClicker
+          $("#large").empty();
+          $(".small").empty();
+        })
+      }
+    });
+  }
+  fightClicker();
+
+  switchClicker = () => {
+
+    $("#switch").click((e) => {
+      console.log("I have been clicked");
+      $("#large").empty();
+      $(".small").empty();
+      switchClicked = !switchClicked;
+      for(let i = 0; i < userTeam.length; i++) {
+        let img = document.createElement("img");
+        img.src = userTeam[i].switchSprite;
+        img.id = `${i}`;
+        img.className = "mid-img";
+        $("#large").append(img);
+
+        $(img).click((e) => {
+          console.log(e);
+          userActive[0].currHP = userCurrentHP;
+          userTeam.push(userActive.shift());
+          let x = userTeam[e.target.id];
+          $(`#${x.name}`).remove();
+          userActive.push(x);
+          userTeam.splice(e.target.id, 1);
+          $("#large").empty();
+          $(".small").empty();
+          $("#user-current").remove();
+          $("#user-active-maxhp").remove();
+          $("#user-active-currenthp").remove();
+          $("#user-active-sprite").empty();
+
+          let img = document.createElement("img");
+          img.src = userActive[0].battleSprite;
+          img.className = "mid-img";
+          $("#"+userActive[0].name).remove();
+          $(img).appendTo("#user-active-sprite");
+
+          let pName = document.createElement("p");
+          pName.className = "active-poke-name";
+          pName.id = "user-current";
+          $(pName).text(`${userActive[0].name}`);
+          $(pName).appendTo("#user-active-display");
+
+          let imgTeam = document.createElement("img");
+          imgTeam.src = userTeam[userTeam.length-1].switchSprite;
+          imgTeam.className = "team";
+          $(imgTeam).appendTo("#user-log");
+
+          userCurrentHP = (userActive[0].stats.hp*2)+110
+          userHPFormula(userCurrentHP);
+
+          small;
+          mainBattleScreenMenu();
+          fightClicker();
+          switchClicker();
+        })
+      }
+    })
+  }
+  switchClicker();
+  // keypress functionality to revert to main battle screen
+  $(document).keydown((e)=>{
+    if(e.keyCode === 27 && (fightClicked || switchClicked)) {
+      mainBattleScreenMenu();
+      fightClicker();
+      switchClicker();
+      $("#large").empty();
+      fightClicked = false;
+      switchClicked = false;
+
+    }
+  });
 }
 
 const compStart = () => {
-
-  compActive.push(compTeam[0]);
+  // if(compTeam.length === 0 && compActive.length === 0) {
+  //
+  // }
+  compActive.push(compTeam.shift());
     if(compActive[0]) {
 
       let img = document.createElement("img");
@@ -609,83 +754,13 @@ const compStart = () => {
       foeHPFormula(foeCurrentHP);
     }
       // Setting what I want to start within my small sectionals in the UI
-      let small = document.getElementsByClassName("small");
-      mainBattleScreenMenu = () =>{
-        let arrUI = ["fight", "switch", "item", "quit"];
-        $(".small").empty();
-        for(let i = 0; i < small.length; i++) {
-          let p = document.createElement("p");
-          p.className = "small-text";
-          $(".small-text").css("font-size", "16px");
-          p.id = arrUI[i];
-          $(p).text(arrUI[i]);
-          $(small[i]).append(p);
-        }
-      }
-      mainBattleScreenMenu();
-      // Click functionality for the fight tag
-      fightClicker = () => {
-         $("#fight").click((e)=> {
-          console.log(e);
-          fightClicked = !fightClicked;
-          $(".small").empty();
 
-          let p = document.createElement("p");
-          p.id = "fight-info";
-          $(p).html(`Hover over a move to see details about it or press <i>ESC</i> to go back.`);
-          $(p).appendTo("#large");
-          // For loop to place the active pokemon's moves
-          for(let i = 0; i < small.length; i++) {
-            let p = document.createElement("p");
-            p.className = "small-text";
-            $(p).css("font-size", "12px");
-            p.id = i;
-            $(p).text(userActive[0].moves[i].name);
-            $(small[i]).append(p);
-
-            $(p).mouseover(() => {
-              $("#large").empty();
-              let m = document.createElement("p");
-              m.className = "move-info move-name";
-              $(m).text(userActive[0].moves[i].name);
-              $(m).appendTo("#large");
-
-              let t = document.createElement("p");
-              t.className = "move-info move-type";
-              $(t).css("background-color", typeColor(userActive[0].moves[i].type))
-              $(t).text(userActive[0].moves[i].type);
-              $(t).appendTo("#large");
-
-              let desc = document.createElement("p");
-              desc.className = "move-info move-desc";
-              $(desc).text(userActive[0].moves[i].description);
-              $(desc).appendTo("#large");
-            })
-            // Add a click event to each move also.
-            $(p).click((e) => {
-              userMove = userActive[0].moves[e.target.id];
-              console.log(`You are going to use ${e.target.text} when the Battle function runs`)
-              battle(); // -> This calls mainBattleScreenMenu and fightClicker
-              $("#large").empty();
-            })
-          }
-        });
-      }
-      fightClicker();
-      // keypress functionality to revert to main battle screen
-      $(document).keydown((e)=>{
-        if(e.keyCode === 27 && fightClicked) {
-          mainBattleScreenMenu();
-          fightClicker();
-          $("#large").empty();
-          fightClicked = false;
-
-        }
-      });
 }
 // 2nd part of the battle phase
 const battleP2 = () => {
+
     if(userActiveSpd > compActiveSpd) {
+
       // Checking for STAB on Attacking poke
       if(userActive[0].types[0] === userMove.type || userActive[0].types[0] === userMove.type) {
         s = 1.5;
@@ -716,8 +791,10 @@ const battleP2 = () => {
             $("#foe-current").remove();
             $("#comp-active-maxhp").remove();
             $("#comp-active-currenthp").remove();
-            $("#comp-active-sprite").remove();
+            $("#comp-active-sprite").empty();
             compStart();
+            mainBattleScreenMenu();
+            fightClicker();
           } else {
             foeHPFormula(foeCurrentHP);
             mainBattleScreenMenu();
@@ -748,8 +825,10 @@ const battleP2 = () => {
             $("#foe-current").remove();
             $("#comp-active-maxhp").remove();
             $("#comp-active-currenthp").remove();
-            $("#comp-active-sprite").remove();
+            $("#comp-active-sprite").empty();
             compStart();
+            mainBattleScreenMenu();
+            fightClicker();
           } else {
             foeHPFormula(foeCurrentHP);
             mainBattleScreenMenu();
@@ -768,8 +847,14 @@ const battleP2 = () => {
           userHPFormula(userCurrentHP);
         }
       }
+
+      let p = document.createElement("p");
+      p.className = "log";
+      $(p).text(`${userActive[0].name} uses ${userMove.name}`);
+      $(p).appendTo("#user-display-log");
     }
     else if(compActiveSpd > userActiveSpd) {
+
       // Checking for STAB on Attacking poke
       if(compActive[0].types[0] === compMove.type || compActive[0].types[1] === compMove.type) {
         s = 1.5;
@@ -799,8 +884,10 @@ const battleP2 = () => {
             $("#user-current").remove();
             $("#user-active-maxhp").remove();
             $("#user-active-currenthp").remove();
-            $("#user-active-sprite").remove();
+            $("#user-active-sprite").empty();
             userStart();
+            mainBattleScreenMenu();
+            fightClicker();
           } else {
             userHPFormula(userCurrentHP);
             mainBattleScreenMenu();
@@ -832,8 +919,10 @@ const battleP2 = () => {
             $("#user-current").remove();
             $("#user-active-maxhp").remove();
             $("#user-active-currenthp").remove();
-            $("#user-active-sprite").remove();
+            $("#user-active-sprite").empty();
             userStart();
+            mainBattleScreenMenu();
+            fightClicker();
           } else {
             userHPFormula(userCurrentHP);
             mainBattleScreenMenu();
@@ -850,7 +939,12 @@ const battleP2 = () => {
           foeCurrentHP = compActive[0].stats.hp*2+110;
         }
         foeHPFormula(foeCurrentHP);
+
       }
+      let p = document.createElement("p");
+      p.className = "log";
+      $(p).text(`${compActive[0].name} uses ${compMove.name}`);
+      $(p).appendTo("#comp-display-log");
     }
 }
 // Battle function - All the logic for the battle.
@@ -871,7 +965,9 @@ const battle = () => {
     userActiveSpd = (userActive[0].stats.speed*2)+5;
     compActiveSpd = (compActive[0].stats.speed*2)+5;
 
+
     if(userActiveSpd > compActiveSpd) {
+
       // Checking for STAB on Attacking poke
       if(userActive[0].types[0] === userMove.type || userActive[0].types[0] === userMove.type) {
         s = 1.5;
@@ -902,14 +998,16 @@ const battle = () => {
             $("#foe-current").remove();
             $("#comp-active-maxhp").remove();
             $("#comp-active-currenthp").remove();
-            $("#comp-active-sprite").remove();
+            $("#comp-active-sprite").empty();
             compStart();
+            mainBattleScreenMenu();
+            fightClicker();
             userActiveSpd = 0
           } else {
             console.log("did it hit");
             foeHPFormula(foeCurrentHP);
             userActiveSpd = 0;
-            battleP2();
+            setTimeout(battleP2, 1500);
           }
       }
       else if(userMove.category === "special") {
@@ -937,17 +1035,20 @@ const battle = () => {
             $("#foe-current").remove();
             $("#comp-active-maxhp").remove();
             $("#comp-active-currenthp").remove();
-            $("#comp-active-sprite").remove();
+            $("#comp-active-sprite").empty();
             compStart();
+            mainBattleScreenMenu();
+            fightClicker();
             userActiveSpd = 0;
           } else {
             foeHPFormula(foeCurrentHP);
             userActiveSpd = 0;
-            battleP2();
+            setTimeout(battleP2, 1500);
           }
         }
       else if(userMove.category === "heal") {
         userCurrentHP += (userCurrentHP*userMove.power);
+        userActiveSpd = 0;
 
         if(userCurrentHP === userActive[0].stats.hp*2+110) {
           console.log("I have full HP");
@@ -956,10 +1057,16 @@ const battle = () => {
           userCurrentHP = userActive[0].stats.hp*2+110;
         } else {
           userHPFormula(userCurrentHP);
+          setTimeout(battleP2, 1500)
         }
       }
+      let p = document.createElement("p");
+      p.className = "log";
+      $(p).text(`${userActive[0].name} uses ${userMove.name}`);
+      $(p).appendTo("#user-display-log");
     }
     else if(compActiveSpd > userActiveSpd) {
+
       // Checking for STAB on Attacking poke
       if(compActive[0].types[0] === compMove.type || compActive[0].types[1] === compMove.type) {
         s = 1.5;
@@ -989,13 +1096,15 @@ const battle = () => {
             $("#user-current").remove();
             $("#user-active-maxhp").remove();
             $("#user-active-currenthp").remove();
-            $("#user-active-sprite").remove();
+            $("#user-active-sprite").empty();
             userStart();
+            mainBattleScreenMenu();
+            fightClicker();
             compActiveSpd = 0;
           } else {
             userHPFormula(userCurrentHP);
             compActiveSpd = 0;
-            battleP2();
+            setTimeout(battleP2, 1500);
           }
         }
       else if(compMove.category === "special") {
@@ -1023,17 +1132,20 @@ const battle = () => {
             $("#user-current").remove();
             $("#user-active-maxhp").remove();
             $("#user-active-currenthp").remove();
-            $("#user-active-sprite").remove();
+            $("#user-active-sprite").empty();
             userStart();
+            mainBattleScreenMenu();
+            fightClicker();
             compActiveSpd = 0;
           } else {
             userHPFormula(userCurrentHP);
             compActiveSpd = 0;
-            battleP2();
+            setTimeout(battleP2, 1500);
           }
       }
       else if(compMove.category === "heal") {
         foeCurrentHP += (foeCurrentHP*userMove.power);
+        compActiveSpd = 0;
 
         if(foeCurrentHP === compActive[0].stats.hp*2+110) {
           console.log("I have full HP");
@@ -1042,7 +1154,12 @@ const battle = () => {
           foeCurrentHP = compActive[0].stats.hp*2+110;
         }
         foeHPFormula(foeCurrentHP);
+        setTimeout(battleP2, 1500)
       }
+      let p = document.createElement("p");
+      p.className = "log";
+      $(p).text(`${compActive[0].name} uses ${compMove.name}`);
+      $(p).appendTo("#comp-display-log");
     }
   }
 }
@@ -1123,6 +1240,7 @@ let getPokemon = (poke) => {
         },
         "weight" : pokemonData.weight,
         "battleSprite" : pokemonData.sprites.back_default,
+        "switchSprite" : pokemonData.sprites.front_default,
       }
 
       // Pushing each pokemon's info into a team array
@@ -1196,6 +1314,7 @@ let getPokemon = (poke) => {
         },
         "weight" : pokemonData.weight,
         "battleSprite" : pokemonData.sprites.back_default,
+        "switchSprite" : pokemonData.sprites.front_default,
       }
       // Pushing each pokemon's info into a team array
       userTeam.push(obj);
@@ -1266,6 +1385,7 @@ let getPokemon = (poke) => {
         },
         "weight" : pokemonData.weight,
         "battleSprite" : pokemonData.sprites.back_default,
+        "switchSprite" : pokemonData.sprites.front_default,
       }
       // Pushing each pokemon's info into a team array
       userTeam.push(obj);

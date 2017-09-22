@@ -76,6 +76,21 @@ body {
   border-bottom-right-radius: 3px;
 }
 
+#comp-display-log {
+  width: 240px;
+  height: 50px;
+  position: absolute;
+  top: 100px;
+}
+
+#user-display-log {
+  width: 240px;
+  height: 50px;
+  position: absolute;
+  bottom: 100px;
+  right: 0;
+}
+
 #user-active-sprite {
   position: absolute;
   bottom: 40px;
