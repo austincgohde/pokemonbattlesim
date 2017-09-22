@@ -571,11 +571,11 @@ var dmg = (power, attacker, defender) => {
 const userStart = () => {
   if(userTeam.length === 0 && userActive.length === 0) {
     $("#central-info").empty();
-    $("footer").empty();
+    $("footer").remove();
     let go = document.createElement("p");
-    p.id = "game-over";
-    $(p).text("You have been defeated by the Computer");
-    $(p).appendTo("#central-info");
+    go.id = "game-over";
+    $(go).text("You have been defeated by the Computer");
+    $(go).appendTo("#central-info");
   } else {
     userActive.push(userTeam.shift());
     if(userActive[0]) {
@@ -744,11 +744,11 @@ const userStart = () => {
 const compStart = () => {
   if(compTeam.length === 0 && compActive.length === 0) {
     $("#central-info").empty();
-    $("footer").empty();
+    $("footer").remove();
     let go = document.createElement("p");
-    p.id = "game-over";
-    $(p).text("You have defeated the Computer");
-    $(p).appendTo("#central-info");
+    go.id = "game-over";
+    $(go).text("You have defeated the Computer");
+    $(go).appendTo("#central-info");
   } else {
     compActive.push(compTeam.shift());
       if(compActive[0]) {
@@ -808,9 +808,9 @@ const battleP2 = () => {
             $("#comp-active-currenthp").remove();
             $("#comp-active-sprite").empty();
             compStart();
-            mainBattleScreenMenu();
-            fightClicker();
-            switchClicker();
+            setTimeout(mainBattleScreenMenu, 100);
+            setTimeout(fightClicker, 200);
+            setTimeout(switchClicker, 300);
             escListener;
           } else {
             foeHPFormula(foeCurrentHP);
@@ -845,9 +845,9 @@ const battleP2 = () => {
             $("#comp-active-currenthp").remove();
             $("#comp-active-sprite").empty();
             compStart();
-            mainBattleScreenMenu();
-            fightClicker();
-            switchClicker();
+            setTimeout(mainBattleScreenMenu, 100);
+            setTimeout(fightClicker, 200);
+            setTimeout(switchClicker, 300);
           } else {
             foeHPFormula(foeCurrentHP);
             mainBattleScreenMenu();
@@ -957,11 +957,6 @@ const battleP2 = () => {
         }
 
         foeHPFormula(foeCurrentHP);
-        mainBattleScreenMenu();
-        fightClicker();
-        switchClicker();
-        escListener;
-
       }
       let pBattleLog = document.createElement("p");
       pBattleLog.className = "log";
@@ -1026,18 +1021,16 @@ const battle = () => {
             $(p).text(`${userActive[0].name} uses ${userMove.name}`);
             $(p).appendTo("#user-display-log");
 
-            mainBattleScreenMenu();
-
             compActive = [];
             $("#foe-current").remove();
             $("#comp-active-maxhp").remove();
             $("#comp-active-currenthp").remove();
             $("#comp-active-sprite").empty();
             compStart();
+            setTimeout(mainBattleScreenMenu, 100);
+            setTimeout(fightClicker, 200);
+            setTimeout(switchClicker, 300);
 
-            fightClicker();
-            switchClicker();
-            escListener;
           } else {
             foeHPFormula(foeCurrentHP);
             userActiveSpd = 0;
@@ -1071,9 +1064,9 @@ const battle = () => {
             $("#comp-active-currenthp").remove();
             $("#comp-active-sprite").empty();
             compStart();
-            mainBattleScreenMenu();
-            fightClicker();
-            switchClicker();
+            setTimeout(mainBattleScreenMenu, 100);
+            setTimeout(fightClicker, 200);
+            setTimeout(switchClicker, 300);
 
           } else {
             foeHPFormula(foeCurrentHP);
@@ -1100,10 +1093,6 @@ const battle = () => {
       $(p).text(`${userActive[0].name} uses ${userMove.name}`);
       $(p).appendTo("#user-display-log");
 
-      mainBattleScreenMenu();
-      fightClicker();
-      switchClicker();
-      escListener;
     }
     else if(compActiveSpd > userActiveSpd) {
 
@@ -1613,16 +1602,16 @@ let getPokemon = (poke) => {
       "category" : "physical"
     },
     {
-      "name" : "Synthesis",
-      "pp" : 10,
+      "name" : "Slam",
+      "pp" : 20,
       "stat-changes" : {},
       "description" : "Heals the user for half of their Max HP. Affected by Weather",
       "type" : "grass",
       "target" : "user",
       "priority" : 0,
       "accuracy" : null,
-      "power" : .5,
-      "category" : "heal",
+      "power" : 40,
+      "category" : "physical",
     },
     {
       "name" : "Energy Ball",

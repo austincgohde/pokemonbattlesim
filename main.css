@@ -189,3 +189,12 @@ body {
 .small-text {
   text-transform: capitalize;
 }
+
+#game-over {
+  margin: auto;
+  font-size: 24px;
+  background-color: rgba(265, 265, 265, 0.50);
+  line-height: 60px;
+  border: 5px solid black;
+  padding: 0 5px;
+}
